@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
             else if (command == "pids") {
                 // SendAndReceive(client, command); // too few bytes
                 send(client, command.c_str(), command.size(), 0);
-                char buff[1'000'000];
+                char buff[2000000];
                 int bytesReceived = recv(client, buff, sizeof(buff), 0);
                 if (bytesReceived > 0) {
                     buff[bytesReceived] = '\0';

