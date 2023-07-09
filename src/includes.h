@@ -19,4 +19,4 @@
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "gdiplus.lib")
 
-const std::string VERSION =         "1.5.1";
+const std::string VERSION =         "1.5.2";

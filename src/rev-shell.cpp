@@ -386,7 +386,7 @@ int main(int argc, char* argv[])
 
                 Sleep(1000);
 
-                PlaySound(file.c_str(), NULL, SND_FILENAME); // SND_ASYNC
+                PlaySound(file.c_str(), NULL, SND_ASYNC | SND_FILENAME); // SND_ASYNC
             }
 
             else if (command == "exit" || command == "quit" || command == "bye") {
