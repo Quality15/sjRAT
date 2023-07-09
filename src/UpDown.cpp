@@ -5,6 +5,7 @@ void ReceiveFile(SOCKET s, const std::string& filename)
     std::ofstream file(filename, std::ios::binary);
     if (!file)
     {
+        ColoredText(F_LIGHTRED);
         printf("[! | UpDown.cpp] Failed to create file: %s\n", filename.c_str());
         return;
     }
@@ -14,6 +15,7 @@ void ReceiveFile(SOCKET s, const std::string& filename)
     int bytesReceived = recv(s, reinterpret_cast<char*>(&fileSize), sizeof(fileSize), 0);
     if (bytesReceived <= 0)
     {
+        ColoredText(F_LIGHTRED);
         printf("[! | UpDown.cpp] Failed to receive file size\n");
         file.close();
         std::remove(filename.c_str()); // Удаляем созданный файл
@@ -30,6 +32,7 @@ void ReceiveFile(SOCKET s, const std::string& filename)
         int bytesReceived = recv(s, buffer, FILE_BUFF_SIZE, 0);
         if (bytesReceived <= 0)
         {
+            ColoredText(F_LIGHTRED);
             printf("[! | UpDown.cpp] Failed to receive file\n");
             break;
         }
@@ -47,10 +50,12 @@ void ReceiveFile(SOCKET s, const std::string& filename)
 
     if (fileSize <= 0)
     {
+        ColoredText(F_LIGHTCYAN);
         printf("[* | UpDown.cpp] File received: %s\n", filename.c_str());
     }
     else
     {
+        ColoredText(F_LIGHTRED);
         printf("[! | UpDown.cpp] Failed to receive complete file: %s\n", filename.c_str());
         std::remove(filename.c_str()); // Удаляем частично принятый файл
     }
@@ -60,7 +65,8 @@ void SendFile(SOCKET s, char* filename)
 {
     std::ifstream file(filename, std::ios::binary);
     if (!file) {
-        printf("[!] Failed to open file: %s\n", filename);
+        ColoredText(F_LIGHTRED);
+        printf("[! | UpDown.cpp] Failed to open file: %s\n", filename);
         return;
     }
 
@@ -80,14 +86,15 @@ void SendFile(SOCKET s, char* filename)
         // Читаем очередную часть файла
         std::streamsize bytesRead = file.readsome(buffer, FILE_BUFF_SIZE);
         if (bytesRead <= 0) {
-            printf("[!] Failed to read file: %s\n", filename);
+            printf("[! | UpDown.cpp] Failed to read file: %s\n", filename);
             break;
         }
 
         // Отправляем прочитанные данные клиенту
         int bytesSent = send(s, buffer, bytesRead, 0);
         if (bytesSent <= 0) {
-            printf("[!] Failed to send file: %s\n", filename);
+            ColoredText(F_LIGHTRED);
+            printf("[! | UpDown.cpp] Failed to send file: %s\n", filename);
             break;
         }
 

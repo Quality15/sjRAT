@@ -14,6 +14,9 @@
 #include <ctime>
 #include <gdiplus.h>
 #include <random>
+
+#include "colors.h"
+
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "gdiplus.lib")

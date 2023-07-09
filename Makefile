@@ -22,10 +22,10 @@ OUTPUT_DIR = build
 all: server client
 	
 client:
-	$(CC) -O2 $(SOURCE_DIR)/rev-shell.cpp $(SOURCE_DIR)/UpDown.cpp -o $(OUTPUT_DIR)/client.exe $(CFLAGS)
+	$(CC) -O2 $(SOURCE_DIR)/rev-shell.cpp $(SOURCE_DIR)/UpDown.cpp $(SOURCE_DIR)/colors.cpp -o $(OUTPUT_DIR)/client.exe $(CFLAGS)
 
 server:
-	$(CC) -O2 $(SOURCE_DIR)/server.cpp $(SOURCE_DIR)/UpDown.cpp -o $(OUTPUT_DIR)/server.exe $(CFLAGS)
+	$(CC) -O2 $(SOURCE_DIR)/server.cpp $(SOURCE_DIR)/UpDown.cpp $(SOURCE_DIR)/colors.cpp -o $(OUTPUT_DIR)/server.exe $(CFLAGS)
 
 clean:
 	rm $(OUTPUT_DIR)/$(OUTPUT)
