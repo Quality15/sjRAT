@@ -1,22 +1,4 @@
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <Windows.h>
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <stdio.h>
-#include <string.h>
-#include <tchar.h>
-#include <chrono>
-#include <mmsystem.h>
-#include <tlhelp32.h>
-#include <gdiplus.h>
-#include <ctime>
-#pragma comment(lib, "winmm.lib")
-#pragma comment(lib, "gdiplus.lib")
-#pragma comment(lib, "Ws2_32.lib")
-
-#define FILE_BUFF_SIZE  100'000'000
+#include "includes.h"
 
 std::string GenerateRandomFilename()
 {
@@ -302,7 +284,7 @@ int main(int argc, char* argv[])
 
     // debug
     // printf("Connected\n_-=v1.4.1=-_");
-    MessageBox(0, "_-=v1.4.3=-_", "Connected!", MB_OK | MB_ICONINFORMATION);
+    MessageBox(0, VERSION.c_str(), "Connected!", MB_OK | MB_ICONINFORMATION);
 
     char buff[1024];
     while (true)

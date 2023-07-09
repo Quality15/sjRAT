@@ -4,6 +4,9 @@ CC = g++
 # flags
 CFLAGS = -lws2_32 -lgdi32 -luser32 -s -ffunction-sections -fdata-sections -Wno-write-strings -fno-exceptions -fmerge-all-constants -static-libstdc++ -static-libgcc -fpermissive -fexceptions
 
+# opencv
+# -IC:\opencv\build\include -LC:\opencv\build\lib -lopencv_core -lopencv_highgui -lopencv_imgproc
+
 # target name
 # TARGET = server.cpp
 
