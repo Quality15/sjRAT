@@ -158,8 +158,13 @@ int main(int argc, char* argv[])
             std::cout << "sj> ";
             std::getline(std::cin, command);
 
-            if (command == "msgbox") {
-                SendAndReceive(client, command);
+            if (command.substr(0, 6) == "msgbox") {
+                if (command.length() > 6) {
+                    SendAndReceive(client, command); 
+                } else {
+                    ColoredText(F_LIGHTRED);
+                    printf("[!] Usage: msgbox <text>\n");
+                }
             }
             else if (command.substr(0, 4) == "beep") {
                 if (command.length() > 4) {

