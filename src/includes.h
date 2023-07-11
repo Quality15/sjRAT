@@ -15,9 +15,11 @@
 #include <ctime>
 #include <gdiplus.h>
 #include <random>
-// #include <opencv2/opencv.hpp>
+#include <Shlwapi.h>
+
+#pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "gdiplus.lib")
 
-const std::string VERSION =         "1.7.1";
+const std::string VERSION =         "1.8.1";

