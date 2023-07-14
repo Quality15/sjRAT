@@ -2,7 +2,33 @@
 ## `WARNING!` For education purposes only!
 
 ### Functionality
-- Summon Message Boxes
+- Delete file
+- Upload file
+- Download file
+- Execute file
+
+- Set volume value
+- Beep sound
+- Play sound from file
+
+- System info
+- Message Box
+- Ping
+
+- Reboot PC
+- Shutdown PC
+
+- Off/on monitor
+- Off/on keyboard
+- Off/on mouse
+
+- Get pIDs (all processes running)
+- Kill process
+
+- Take screenshot
+- Set wallpaper
+- Running RAT on startup
+
 - coming soon
 
 ### Install
