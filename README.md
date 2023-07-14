@@ -1,4 +1,6 @@
 # sjRAT - Simple Remote Administration Tool
+
+![sjRAT_banner](./banner.png)
 ## `WARNING!` For education purposes only!
 
 ### Functionality
