@@ -2,6 +2,15 @@
 #include "UpDown.h"
 #include "colors.h"
 
+#include "../curl/include/curl/curl.h"
+
+void WriteLocalVersion(std::string version_filename) 
+{
+    std::ofstream out(version_filename);
+    out << VERSION; // write version from `includes.h` to file `version`
+    out.close();
+}
+
 std::string GenerateRandomFilename()
 {
     const std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -122,6 +131,9 @@ int main(int argc, char* argv[])
 
     // Show banner
     banner();
+
+    // Write version
+    WriteLocalVersion("../version");
 
     // HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE); // for changing text color
 

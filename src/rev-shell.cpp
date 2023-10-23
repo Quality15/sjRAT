@@ -149,7 +149,8 @@ bool IsElevated()
 
 int main(int argc, char* argv[])
 {
-    FreeConsole();
+    // FreeConsole();
+    ShowWindow(GetConsoleWindow(), SW_HIDE); // hide console;
 
     // if (!IsElevated())
     // {
