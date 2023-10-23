@@ -11,6 +11,43 @@ void WriteLocalVersion(std::string version_filename)
     out.close();
 }
 
+size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output) {
+    size_t total_size = size * nmemb;
+    output->append(static_cast<char*>(contents), total_size);
+    return total_size;
+}
+std::string GetGitHubVersion() 
+{
+    CURL *curl;
+    CURLcode res;
+    std::string response;
+
+    std::string url = "https://raw.githubusercontent.com/Quality15/sjRAT/master/version";
+
+    curl = curl_easy_init();
+
+    if (curl)
+    {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK) {
+            std::cerr << "cURL failed: " << curl_easy_strerror(res) << std::endl;
+        }
+
+        curl_easy_cleanup(curl);
+    }
+    return response;
+}
+
 std::string GenerateRandomFilename()
 {
     const std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -106,11 +143,9 @@ void banner()
 
 void MeasurePingTime(SOCKET client)
 {
-    // Отправляем текущее время клиенту
     auto start = std::chrono::high_resolution_clock::now();
     send(client, reinterpret_cast<char*>(&start), sizeof(start), 0);
 
-    // Получаем время отклика от клиента
     std::chrono::high_resolution_clock::time_point end;
     int bytesReceived = recv(client, reinterpret_cast<char*>(&end), sizeof(end), 0);
     if (bytesReceived == sizeof(end)) {
@@ -134,6 +169,17 @@ int main(int argc, char* argv[])
 
     // Write version
     WriteLocalVersion("../version");
+
+    // printf("Local: %s\nGitHub: %s\n", VERSION.c_str(), GetGitHubVersion().c_str());
+
+    // Check Version
+    if (GetGitHubVersion() != VERSION)
+    { 
+        ColoredText(F_RED);
+        printf("[!] You are using an old version of program\n\tYour Version: v%s\n\tLatest Version: v%s\n", VERSION.c_str(), GetGitHubVersion().c_str());
+        printf("\tUpdate program from here -> https://github.com/Quality15/sjRAT\n");
+        ColoredText(F_WHITE);
+    }
 
     // HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE); // for changing text color
 

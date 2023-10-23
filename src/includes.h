@@ -22,6 +22,6 @@
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "gdiplus.lib")
 
-const std::string VERSION =         "2.1.0";
+const std::string VERSION =         "2.1.1";
 
 std::string DOWNLOAD_FOLDER = ""; // local folder
