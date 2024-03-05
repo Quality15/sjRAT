@@ -1,0 +1,1 @@
+// std::string DOWNLOAD_FOLDER = ""; // local folder

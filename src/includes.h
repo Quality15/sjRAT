@@ -22,6 +22,10 @@
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "gdiplus.lib")
 
-const std::string VERSION =         "2.1.1";
+const std::string VERSION =         "2.2";
 
-std::string DOWNLOAD_FOLDER = ""; // local folder
+#define OPEN_SCREENSHOT         1     // open screenshot after saving (on server)
+#define CHECK_VERSION           1     // check version from github (server)
+#define OPEN_URL                0     // open gh page on run (server)
+#define MSGBOX_SHOW             0     // show msgbox on connection (client)
+#define ELEVATION_MSG           0     // show msgbox if run without admin rights (client)

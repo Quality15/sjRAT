@@ -1,37 +1,61 @@
-# compiler
+# Compiler
 CC = g++
 
-# flags
+# Flags
 CFLAGS = -lws2_32 -lgdi32 -luser32 -lwinmm -lshlwapi -s -ffunction-sections -fdata-sections -Wno-write-strings -fno-exceptions -fmerge-all-constants -static-libstdc++ -static-libgcc -fpermissive -fexceptions
 
-# opencv
-# -IC:\opencv\build\include -LC:\opencv\build\lib -lopencv_core -lopencv_highgui -lopencv_imgproc
-
-# curl
+# Curl flags
 CURL_FLAGS = -Lcurl/lib -lcurl
 
-# target name
-# TARGET = server.cpp
+# Directories
+SRC_DIR = src
+BUILD_DIR = build
+OBJ_DIR = obj
 
-# output name (.exe)
-# OUTPUT = server.exe
+# Source files
+CLIENT_SRC = $(wildcard $(SRC_DIR)/client/*.cpp)
+SERVER_SRC = $(wildcard $(SRC_DIR)/server/*.cpp)
+COMMON_SRC = $(wildcard $(SRC_DIR)/*.cpp)
 
-# source
-SOURCE_DIR = src
+# Object files
+CLIENT_OBJ = $(patsubst $(SRC_DIR)/client/%.cpp,$(OBJ_DIR)/client/%.o,$(CLIENT_SRC))
+SERVER_OBJ = $(patsubst $(SRC_DIR)/server/%.cpp,$(OBJ_DIR)/server/%.o,$(SERVER_SRC))
+COMMON_OBJ = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(COMMON_SRC))
 
-# output
-OUTPUT_DIR = build
+# Targets
+TARGETS = client server
 
-all: server client window
-	
-client:
-	$(CC) -O2 $(SOURCE_DIR)/rev-shell.cpp $(SOURCE_DIR)/UpDown.cpp $(SOURCE_DIR)/colors.cpp -o $(OUTPUT_DIR)/client.exe $(CFLAGS)
+# Default target
+all: $(TARGETS)
 
-server:
-	$(CC) -O2 $(SOURCE_DIR)/server.cpp $(SOURCE_DIR)/UpDown.cpp $(SOURCE_DIR)/colors.cpp -o $(OUTPUT_DIR)/server.exe $(CFLAGS) $(CURL_FLAGS)
+client: $(CLIENT_OBJ) $(COMMON_OBJ)
+	$(CC) -O2 $^ -o $(BUILD_DIR)/$@.exe $(CFLAGS)
 
-window:
-	$(CC) -O2 $(SOURCE_DIR)/window.cpp -o $(OUTPUT_DIR)/window.exe $(CFLAGS)
+server: $(SERVER_OBJ) $(COMMON_OBJ)
+	$(CC) -O2 $^ -o $(BUILD_DIR)/$@.exe $(CFLAGS) $(CURL_FLAGS)
 
+# Rule to compile source files into object files
+$(OBJ_DIR)/client/%.o: $(SRC_DIR)/client/%.cpp | $(OBJ_DIR)/client
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+$(OBJ_DIR)/server/%.o: $(SRC_DIR)/server/%.cpp | $(OBJ_DIR)/server
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+# Create directories if they don't exist
+$(OBJ_DIR)/client:
+	mkdir -p $@
+
+$(OBJ_DIR)/server:
+	mkdir -p $@
+
+$(OBJ_DIR):
+	mkdir -p $@
+
+# Clean
 clean:
-	rm $(OUTPUT_DIR)/$(OUTPUT)
+	rm -rf $(BUILD_DIR)/* $(OBJ_DIR)/*
+
+.PHONY: all client server clean
